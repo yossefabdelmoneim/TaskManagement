@@ -135,3 +135,4 @@ C:\Users\DELL\VScodeProjects\TaskManagement\backend\TaskManagement.Api\bin\Debug
 C:\Users\DELL\VScodeProjects\TaskManagement\backend\TaskManagement.Api\bin\Debug\net10.0\FluentValidation.DependencyInjectionExtensions.dll
 C:\Users\DELL\VScodeProjects\TaskManagement\backend\TaskManagement.Api\bin\Debug\net10.0\BCrypt-Net-Next.dll
 C:\Users\DELL\VScodeProjects\TaskManagement\backend\TaskManagement.Api\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\DELL\VScodeProjects\TaskManagement\backend\TaskManagement.Api\obj\Debug\net10.0\TaskManagement.Api.sourcelink.json

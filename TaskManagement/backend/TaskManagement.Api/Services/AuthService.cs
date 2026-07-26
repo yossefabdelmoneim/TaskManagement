@@ -5,6 +5,7 @@ using TaskManagement.Api.DTOs.Auth;
 using TaskManagement.Api.Interfaces;
 using TaskManagement.Api.Models;
 using TaskManagement.Api.Exceptions;
+using TaskManagement.Api.Helpers;
 
 namespace TaskManagement.Api.Services;
 
@@ -40,12 +41,25 @@ public class AuthService : IAuthService
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        var token = _tokenService.GenerateToken(user);
+        var accessToken = _tokenService.GenerateToken(user);
+
+        var refreshToken = TokenGenerator.GenerateRefreshToken();
+
+        var token = new RefreshToken
+        {
+            Token = refreshToken,
+            UserId = user.Id,
+            ExpiresAt = DateTime.UtcNow.AddDays(7)
+        };
+
+        _context.RefreshTokens.Add(token);
+
+        await _context.SaveChangesAsync();
 
         return new AuthResponseDto
         {
-            Token = token,
-            Message = "User registered successfully.",
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
         };
     }
 
@@ -58,12 +72,26 @@ public class AuthService : IAuthService
             throw new UnauthorizedException("Invalid email or password.");
         }
 
-        var token = _tokenService.GenerateToken(user);
+        var accessToken = _tokenService.GenerateToken(user);
+
+        var refreshToken = TokenGenerator.GenerateRefreshToken();
+
+         var token = new RefreshToken
+        {
+            Token = refreshToken,
+            UserId = user.Id,
+            ExpiresAt = DateTime.UtcNow.AddDays(7)
+        };
+
+
+        _context.RefreshTokens.Add(token);
+
+        await _context.SaveChangesAsync();
 
         return new AuthResponseDto
         {
-            Token = token,
-            Message = "User logged in successfully.",
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
         };
     }
 }
