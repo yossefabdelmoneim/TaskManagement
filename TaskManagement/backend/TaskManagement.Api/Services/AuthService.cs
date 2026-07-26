@@ -1,5 +1,7 @@
 using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using TaskManagement.Api.Configurations;
 using TaskManagement.Api.Data;
 using TaskManagement.Api.DTOs.Auth;
 using TaskManagement.Api.Interfaces;
@@ -13,11 +15,13 @@ public class AuthService : IAuthService
 {
     private readonly AppDbContext _context;
     private readonly ITokenService _tokenService;
+    private readonly JwtSettings _jwtSettings;
 
-    public AuthService(AppDbContext context, ITokenService tokenService)
+    public AuthService(AppDbContext context, ITokenService tokenService, IOptions<JwtSettings> jwtOptions)
     {
         _context = context;
         _tokenService = tokenService;
+        _jwtSettings = jwtOptions.Value;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
@@ -49,7 +53,7 @@ public class AuthService : IAuthService
         {
             Token = refreshToken,
             UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(7)
+            ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays)
         };
 
         _context.RefreshTokens.Add(token);
@@ -80,7 +84,7 @@ public class AuthService : IAuthService
         {
             Token = refreshToken,
             UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(7)
+            ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays)
         };
 
 
@@ -94,4 +98,76 @@ public class AuthService : IAuthService
             RefreshToken = refreshToken
         };
     }
+
+    public async Task LogoutAsync(LogoutRequestDto dto)
+    {
+        var refreshToken = await _context.RefreshTokens
+        .FirstOrDefaultAsync(rt => rt.Token == dto.RefreshToken);
+
+        if (refreshToken is null)
+            throw new UnauthorizedException("Invalid refresh token.");
+
+        if (refreshToken.IsRevoked)
+            throw new UnauthorizedException("Refresh token already revoked.");
+
+        refreshToken.IsRevoked = true;
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task LogoutAllAsync(int userId)
+    {
+        var refreshTokens = await _context.RefreshTokens
+        .Where(rt => rt.UserId == userId && !rt.IsRevoked)
+        .ToListAsync();
+
+        foreach (var token in refreshTokens)
+        {
+            token.IsRevoked = true;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+   public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request)
+{
+    var storedToken = await _context.RefreshTokens
+        .Include(rt => rt.User)
+        .FirstOrDefaultAsync(rt => rt.Token == request.RefreshToken);
+
+    if (storedToken is null)
+        throw new UnauthorizedException("Refresh token is invalid.");
+
+    if (storedToken.IsRevoked)
+        throw new UnauthorizedException("Refresh token has been revoked.");
+
+    if (storedToken.ExpiresAt <= DateTime.UtcNow)
+        throw new UnauthorizedException("Refresh token has expired.");
+
+    // Revoke the old token
+    storedToken.IsRevoked = true;
+    // Later we'll add:
+    // storedToken.RevokedAt = DateTime.UtcNow;
+
+    var accessToken = _tokenService.GenerateToken(storedToken.User);
+    var refreshToken = TokenGenerator.GenerateRefreshToken();
+
+    var newRefreshToken = new RefreshToken
+    {
+        Token = refreshToken,
+        UserId = storedToken.UserId,
+        CreatedAt = DateTime.UtcNow,
+        ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays),
+        IsRevoked = false
+    };
+
+    _context.RefreshTokens.Add(newRefreshToken);
+
+    await _context.SaveChangesAsync();
+
+    return new AuthResponseDto
+    {
+        AccessToken = accessToken,
+        RefreshToken = refreshToken
+    };
+}
 }
