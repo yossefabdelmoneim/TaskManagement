@@ -1,0 +1,102 @@
+<section class="container">
+  <div class="header">
+    <div>
+      <h1>Projects</h1>
+      <p class="muted">Manage your projects from one place.</p>
+    </div>
+    @if (isAdmin()) {
+      <a routerLink="/projects/new" class="btn btn-primary">New Project</a>
+    }
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error" role="alert">{{ error() }}</div>
+  }
+
+  <div class="toolbar">
+    <input
+      type="search"
+      class="form-input search-input"
+      placeholder="Search projects…"
+      [value]="search()"
+      (input)="onSearch($any($event.target).value)"
+    />
+
+    <div class="toolbar-actions">
+      <select class="form-input" [value]="sortBy()" (change)="onSortChange($any($event.target).value, sortDirection())">
+        <option value="createdAt">Sort by created date</option>
+        <option value="name">Sort by name</option>
+      </select>
+      <select
+        class="form-input"
+        [value]="sortDirection()"
+        (change)="onSortChange(sortBy(), $any($event.target).value)"
+      >
+        <option value="desc">Descending</option>
+        <option value="asc">Ascending</option>
+      </select>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="card empty-state">Loading projects…</div>
+  } @else if (projects().length === 0) {
+    <div class="card empty-state">
+      <p>No projects found.</p>
+      @if (isAdmin()) {
+        <a routerLink="/projects/new" class="btn btn-primary">Create your first project</a>
+      }
+    </div>
+  } @else {
+    <div class="project-grid">
+      @for (project of projects(); track project.id) {
+        <article class="card project-card">
+          <div class="project-card-header">
+            <h2>{{ project.name }}</h2>
+            <span class="badge">{{ project.createdAt | date: 'mediumDate' }}</span>
+          </div>
+          <p class="project-description">
+            {{ project.description || 'No description provided.' }}
+          </p>
+          <div class="project-card-footer">
+            <a routerLink="/projects/{{ project.id }}/edit" class="btn btn-outline btn-sm">Edit</a>
+            @if (isAdmin()) {
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                [disabled]="deleting() === project.id"
+                (click)="onDelete(project)"
+              >
+                {{ deleting() === project.id ? 'Deleting…' : 'Delete' }}
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </div>
+
+    @if (meta() && meta()!.totalPages > 1) {
+      <div class="pagination">
+        <button
+          type="button"
+          class="btn btn-outline btn-sm"
+          [disabled]="!meta()!.hasPreviousPage"
+          (click)="changePage(page() - 1)"
+        >
+          Previous
+        </button>
+        <span class="page-info">
+          Page {{ meta()!.page }} of {{ meta()!.totalPages }}
+        </span>
+        <button
+          type="button"
+          class="btn btn-outline btn-sm"
+          [disabled]="!meta()!.hasNextPage"
+          (click)="changePage(page() + 1)"
+        >
+          Next
+        </button>
+      </div>
+    }
+  }
+</section>
