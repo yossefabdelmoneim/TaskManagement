@@ -32,13 +32,6 @@ apphost
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# Node / Angular
-node_modules/
-dist/
-.angular/
-out-tsc/
-.tmp/
-
 # Logs
 logs/
 *.log
