@@ -65,7 +65,7 @@ public class ExceptionMiddleware
             }
 
             await context.Response.WriteAsync(
-                JsonSerializer.Serialize(response));
+                JsonSerializer.Serialize(response, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
         }
             }
 }

@@ -71,11 +71,20 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddSlidingWindowLimiter("Sliding", opt =>
+    options.AddSlidingWindowLimiter("Auth", opt =>
     {
-        opt.Window = TimeSpan.FromSeconds(60); // 60 seconds window which means the limit will reset every 60 seconds
-        opt.PermitLimit = 5; // Allow 5 requests per window
-        opt.SegmentsPerWindow = 2; // Divide the window into 2 segments (30 seconds each)
+        opt.Window = TimeSpan.FromSeconds(60);
+        opt.PermitLimit = 20;
+        opt.SegmentsPerWindow = 2;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+
+    options.AddSlidingWindowLimiter("General", opt =>
+    {
+        opt.Window = TimeSpan.FromSeconds(60);
+        opt.PermitLimit = 300;
+        opt.SegmentsPerWindow = 3;
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 0;
     });
@@ -139,6 +148,6 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapControllers().RequireRateLimiting("Sliding");
+app.MapControllers();
 
 app.Run();

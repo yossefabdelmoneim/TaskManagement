@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TaskManagement.Api.DTOs.Projects;
 using TaskManagement.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +9,7 @@ namespace TaskManagement.Api.Controllers;
 
 [Authorize]
 [ApiController]
+[EnableRateLimiting("General")]
 [Route("api/[controller]")]
 public class ProjectsController : ControllerBase
 {

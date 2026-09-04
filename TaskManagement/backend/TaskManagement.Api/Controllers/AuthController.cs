@@ -1,11 +1,13 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TaskManagement.Api.DTOs.Auth;
 using TaskManagement.Api.Interfaces;
 
 namespace TaskManagement.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("Auth")]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
