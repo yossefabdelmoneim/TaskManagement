@@ -1,0 +1,48 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+bin/
+obj/
+artifacts/
+
+# .NET
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.nupkg
+*.nupkg.metadata
+*.cache
+*.pdb
+*.dll
+*.exe
+*.so
+*.dylib
+apphost
+*.sourcelink.json
+
+# Visual Studio
+.vs/
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+out-tsc/
+.tmp/
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.local
