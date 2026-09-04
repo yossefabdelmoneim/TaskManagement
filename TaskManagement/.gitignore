@@ -32,9 +32,6 @@ apphost
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# Other projects in the same workspace
-TaskManagement-UI/
-
 # Logs
 logs/
 *.log
